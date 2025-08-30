@@ -1,378 +1,448 @@
 #!/usr/bin/env python3
 """
-Campus Navigator - University Edition
-Includes: Dijkstra, Kruskal (MST), BFS, DFS, BST
-Nodes reflect NIBM's 5-floor + Building 2 layout.
+Campus Navigator - Mobile UI (Simplified Version)
+Clean, stable mobile interface for campus navigation without custom graphics
 """
-import heapq
-from collections import deque
-from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple
-import argparse
 
-class DisjointSet:
-    def __init__(self):
-        self.parent = {}
-        self.rank = {}
-    def make_set(self, x):
-        if x not in self.parent:
-            self.parent[x] = x
-            self.rank[x] = 0
-    def find(self, x):
-        if self.parent[x] != x:
-            self.parent[x] = self.find(self.parent[x])
-        return self.parent[x]
-    def union(self, x, y):
-        rx, ry = self.find(x), self.find(y)
-        if rx == ry:
-            return False
-        if self.rank[rx] < self.rank[ry]:
-            self.parent[rx] = ry
-        elif self.rank[rx] > self.rank[ry]:
-            self.parent[ry] = rx
-        else:
-            self.parent[ry] = rx
-            self.rank[rx] += 1
-        return True
+from kivy.app import App
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.gridlayout import GridLayout
+from kivy.uix.button import Button
+from kivy.uix.label import Label
+from kivy.uix.textinput import TextInput
+from kivy.uix.popup import Popup
+from kivy.uix.scrollview import ScrollView
+from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.metrics import dp, sp
+from kivy.clock import Clock
 
-# graph
+# Import backend functionality
+from campus_navigator_backend import CampusNavigator
 
-class Graph:
-    def __init__(self, undirected: bool = True):
-        self.adj: Dict[str, List[Tuple[str, float]]] = {}
-        self.undirected = undirected
+class StyledButton(Button):
+    """Simple styled button without custom graphics"""
+    def __init__(self, bg_color=[0.2, 0.6, 0.9, 1], **kwargs):
+        super().__init__(**kwargs)
+        self.background_color = bg_color
+        self.font_size = sp(14)
 
-    def add_node(self, u: str):
-        self.adj.setdefault(u, [])
+class StyledTextInput(TextInput):
+    """Simple styled text input"""
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.background_color = [0.15, 0.15, 0.22, 1]
+        self.foreground_color = [1, 1, 1, 1]
+        self.cursor_color = [0.3, 0.7, 1, 1]
 
-    def add_edge(self, u: str, v: str, w: float):
-        self.add_node(u); self.add_node(v)
-        self.adj[u].append((v, w))
-        if self.undirected:
-            self.adj[v].append((u, w))
+class MainScreen(Screen):
+    """Main screen with simplified, stable design"""
+    def __init__(self, **kwargs):
+        super().__init__(name='main', **kwargs)
+        self.navigator = CampusNavigator()
+        Clock.schedule_once(self.setup_ui, 0.1)
+        
+    def setup_ui(self, dt):
+        """Setup the main user interface"""
+        # Main scroll container
+        main_scroll = ScrollView(
+            do_scroll_x=False,
+            bar_width=dp(4)
+        )
+        
+        # Main container
+        main_layout = BoxLayout(
+            orientation='vertical',
+            spacing=dp(20),
+            padding=[dp(20), dp(30), dp(20), dp(20)],
+            size_hint_y=None
+        )
+        main_layout.bind(minimum_height=main_layout.setter('height'))
+        
+        # Header section
+        header_section = self.create_header()
+        main_layout.add_widget(header_section)
+        
+        # Quick navigation section
+        nav_section = self.create_navigation_section()
+        main_layout.add_widget(nav_section)
+        
+        # Features grid
+        features_grid = self.create_features_grid()
+        main_layout.add_widget(features_grid)
+        
+        main_scroll.add_widget(main_layout)
+        self.add_widget(main_scroll)
+    
+    def create_header(self):
+        """Create header section"""
+        header_layout = BoxLayout(
+            orientation='vertical',
+            size_hint_y=None,
+            height=dp(80),
+            spacing=dp(5)
+        )
+        
+        # Main title
+        title = Label(
+            text='Campus Navigator',
+            font_size=sp(24),
+            size_hint_y=None,
+            height=dp(35),
+            color=[1, 1, 1, 1],
+            bold=True,
+            halign='center'
+        )
+        
+        # Subtitle
+        subtitle = Label(
+            text='Find your way around NIBM campus',
+            font_size=sp(14),
+            size_hint_y=None,
+            height=dp(20),
+            color=[0.8, 0.8, 0.8, 1],
+            halign='center'
+        )
+        
+        # Status
+        status = Label(
+            text='● System Online',
+            font_size=sp(12),
+            size_hint_y=None,
+            height=dp(20),
+            color=[0.3, 0.9, 0.4, 1],
+            halign='center'
+        )
+        
+        header_layout.add_widget(title)
+        header_layout.add_widget(subtitle)
+        header_layout.add_widget(status)
+        
+        return header_layout
+    
+    def create_navigation_section(self):
+        """Create the main navigation section"""
+        nav_layout = BoxLayout(
+            orientation='vertical',
+            size_hint_y=None,
+            height=dp(180),
+            spacing=dp(15)
+        )
+        
+        # Section title
+        nav_title = Label(
+            text='🧭 Quick Navigation',
+            font_size=sp(18),
+            size_hint_y=None,
+            height=dp(30),
+            color=[1, 1, 1, 1],
+            bold=True,
+            halign='center'
+        )
+        
+        # Input fields
+        inputs_layout = BoxLayout(
+            orientation='vertical',
+            spacing=dp(10),
+            size_hint_y=None,
+            height=dp(100)
+        )
+        
+        self.start_input = StyledTextInput(
+            hint_text='Enter start location',
+            multiline=False,
+            size_hint_y=None,
+            height=dp(40)
+        )
+        
+        self.dest_input = StyledTextInput(
+            hint_text='Enter destination',
+            multiline=False,
+            size_hint_y=None,
+            height=dp(40)
+        )
+        
+        inputs_layout.add_widget(self.start_input)
+        inputs_layout.add_widget(self.dest_input)
+        
+        # Find path button
+        find_btn = StyledButton(
+            text='Find Shortest Path',
+            size_hint_y=None,
+            height=dp(45),
+            bg_color=[0.2, 0.7, 0.9, 1]
+        )
+        find_btn.bind(on_press=self.find_shortest_path)
+        
+        nav_layout.add_widget(nav_title)
+        nav_layout.add_widget(inputs_layout)
+        nav_layout.add_widget(find_btn)
+        
+        return nav_layout
+    
+    def create_features_grid(self):
+        """Create the features grid"""
+        features_container = BoxLayout(
+            orientation='vertical',
+            spacing=dp(15),
+            size_hint_y=None
+        )
+        features_container.bind(minimum_height=features_container.setter('height'))
+        
+        # Section title
+        section_title = Label(
+            text='Navigation Tools',
+            font_size=sp(18),
+            size_hint_y=None,
+            height=dp(30),
+            color=[1, 1, 1, 1],
+            bold=True,
+            halign='center'
+        )
+        
+        # Features grid
+        grid = GridLayout(
+            cols=2,
+            spacing=dp(10),
+            size_hint_y=None,
+            row_default_height=dp(60)
+        )
+        grid.bind(minimum_height=grid.setter('height'))
+        
+        # Feature buttons
+        features = [
+            ("📍 Locations", [0.9, 0.5, 0.2, 1], self.list_locations),
+            ("🔍 Search", [0.2, 0.7, 0.9, 1], self.search_location),
+            ("🌐 BFS Path", [0.5, 0.8, 0.3, 1], self.bfs_traversal),
+            ("🌲 DFS Path", [0.8, 0.3, 0.5, 1], self.dfs_traversal),
+            ("🌟 Min Tree", [0.9, 0.7, 0.2, 1], self.show_mst),
+            ("📝 Sort List", [0.6, 0.3, 0.9, 1], self.show_sorted)
+        ]
+        
+        for title, color, callback in features:
+            btn = StyledButton(
+                text=title,
+                bg_color=color,
+                font_size=sp(12)
+            )
+            btn.bind(on_press=callback)
+            grid.add_widget(btn)
+        
+        features_container.add_widget(section_title)
+        features_container.add_widget(grid)
+        
+        return features_container
+    
+    def find_shortest_path(self, instance):
+        """Find and display shortest path"""
+        start = self.start_input.text.strip()
+        dest = self.dest_input.text.strip()
+        
+        if not start or not dest:
+            self.show_popup("Input Required", "Please enter both start and destination locations.")
+            return
+        
+        try:
+            success, result, distance = self.navigator.find_shortest_path(start, dest)
+            
+            if success:
+                self.show_popup("Route Found", result)
+            else:
+                self.show_popup("No Route", result)
+        except Exception as e:
+            self.show_popup("Error", f"An error occurred: {str(e)}")
+    
+    def list_locations(self, instance):
+        """Display all locations"""
+        try:
+            locations = self.navigator.get_locations()
+            content = '\n'.join(f"• {loc}" for loc in locations)
+            self.show_popup("Campus Locations", content)
+        except Exception as e:
+            self.show_popup("Error", f"Could not load locations: {str(e)}")
+    
+    def search_location(self, instance):
+        """Search for location"""
+        self.show_input_popup("Search Location", "Enter location name:", self._do_search)
+    
+    def _do_search(self, location):
+        """Perform location search"""
+        try:
+            found = self.navigator.search_location(location)
+            result = f"Location '{location}' {'found' if found else 'not found'}"
+            self.show_popup("Search Result", result)
+        except Exception as e:
+            self.show_popup("Error", f"Search failed: {str(e)}")
+    
+    def bfs_traversal(self, instance):
+        """BFS traversal"""
+        self.show_input_popup("BFS Traversal", "Enter start location:", self._do_bfs)
+    
+    def _do_bfs(self, start):
+        """Execute BFS"""
+        try:
+            success, result = self.navigator.bfs_traversal(start)
+            self.show_popup("BFS Traversal", result)
+        except Exception as e:
+            self.show_popup("Error", f"BFS failed: {str(e)}")
+    
+    def dfs_traversal(self, instance):
+        """DFS traversal"""
+        self.show_input_popup("DFS Traversal", "Enter start location:", self._do_dfs)
+    
+    def _do_dfs(self, start):
+        """Execute DFS"""
+        try:
+            success, result = self.navigator.dfs_traversal(start)
+            self.show_popup("DFS Traversal", result)
+        except Exception as e:
+            self.show_popup("Error", f"DFS failed: {str(e)}")
+    
+    def show_mst(self, instance):
+        """Show minimum spanning tree"""
+        try:
+            success, result = self.navigator.get_minimum_spanning_tree()
+            self.show_popup("Minimum Spanning Tree", result)
+        except Exception as e:
+            self.show_popup("Error", f"MST calculation failed: {str(e)}")
+    
+    def show_sorted(self, instance):
+        """Show sorted locations"""
+        try:
+            locations = self.navigator.get_sorted_locations()
+            content = '\n'.join(f"• {loc}" for loc in locations)
+            self.show_popup("Sorted Locations", content)
+        except Exception as e:
+            self.show_popup("Error", f"Could not sort locations: {str(e)}")
+    
+    def show_popup(self, title, content):
+        """Show simple popup"""
+        popup_content = BoxLayout(
+            orientation='vertical',
+            spacing=dp(10),
+            padding=dp(15)
+        )
+        
+        # Content with scroll
+        scroll_view = ScrollView()
+        
+        content_label = Label(
+            text=content,
+            font_size=sp(13),
+            color=[1, 1, 1, 1],
+            halign='left',
+            valign='top',
+            size_hint_y=None,
+            text_size=(None, None)
+        )
+        
+        # Update text size based on popup width
+        def update_text_size(instance, value):
+            content_label.text_size = (value - dp(60), None)
+            content_label.height = content_label.texture_size[1] + dp(10)
+        
+        scroll_view.add_widget(content_label)
+        
+        # Close button
+        close_btn = Button(
+            text='Close',
+            size_hint_y=None,
+            height=dp(40),
+            background_color=[0.3, 0.3, 0.3, 1]
+        )
+        
+        popup_content.add_widget(scroll_view)
+        popup_content.add_widget(close_btn)
+        
+        # Create popup
+        popup = Popup(
+            title=title,
+            content=popup_content,
+            size_hint=(0.85, 0.7)
+        )
+        
+        # Bind events
+        popup.bind(width=update_text_size)
+        close_btn.bind(on_press=popup.dismiss)
+        popup.open()
+    
+    def show_input_popup(self, title, message, callback):
+        """Show input popup"""
+        popup_content = BoxLayout(
+            orientation='vertical',
+            spacing=dp(15),
+            padding=dp(15)
+        )
+        
+        # Message
+        msg_label = Label(
+            text=message,
+            font_size=sp(14),
+            size_hint_y=None,
+            height=dp(30),
+            color=[1, 1, 1, 1]
+        )
+        
+        # Text input
+        text_input = TextInput(
+            multiline=False,
+            size_hint_y=None,
+            height=dp(40),
+            font_size=sp(14)
+        )
+        
+        # Buttons
+        btn_layout = BoxLayout(
+            orientation='horizontal',
+            spacing=dp(10),
+            size_hint_y=None,
+            height=dp(40)
+        )
+        
+        cancel_btn = Button(
+            text='Cancel',
+            background_color=[0.5, 0.5, 0.5, 1]
+        )
+        
+        ok_btn = Button(
+            text='OK',
+            background_color=[0.2, 0.7, 0.9, 1]
+        )
+        
+        btn_layout.add_widget(cancel_btn)
+        btn_layout.add_widget(ok_btn)
+        
+        popup_content.add_widget(msg_label)
+        popup_content.add_widget(text_input)
+        popup_content.add_widget(btn_layout)
+        
+        # Create popup
+        popup = Popup(
+            title=title,
+            content=popup_content,
+            size_hint=(0.8, 0.35)
+        )
+        
+        def on_ok(instance):
+            if text_input.text.strip():
+                callback(text_input.text.strip())
+            popup.dismiss()
+        
+        ok_btn.bind(on_press=on_ok)
+        cancel_btn.bind(on_press=popup.dismiss)
+        popup.open()
 
-    def nodes(self) -> List[str]:
-        return list(self.adj.keys())
+class CampusNavigatorApp(App):
+    """Campus Navigator App - Simplified Version"""
+    def build(self):
+        # Set window properties
+        from kivy.core.window import Window
+        Window.clearcolor = (0.1, 0.1, 0.15, 1)
+        
+        # Create screen manager
+        sm = ScreenManager()
+        sm.add_widget(MainScreen())
+        
+        return sm
 
-    def edges(self) -> List[Tuple[str, str, float]]:
-        seen = set()
-        es = []
-        for u, nbrs in self.adj.items():
-            for v, w in nbrs:
-                if self.undirected:
-                    key = tuple(sorted((u, v))) + (w,)
-                    if key in seen:
-                        continue
-                    seen.add(key)
-                es.append((u, v, w))
-        return es
-
-    def bfs(self, start: str) -> Tuple[List[str], Dict[str, Optional[str]]]:
-        if start not in self.adj:
-            return [], {}
-        q = deque([start])
-        visited = {start}
-        parent: Dict[str, Optional[str]] = {start: None}
-        order = []
-        while q:
-            u = q.popleft()
-            order.append(u)
-            for v, _ in self.adj[u]:
-                if v not in visited:
-                    visited.add(v)
-                    parent[v] = u
-                    q.append(v)
-        return order, parent
-
-    def dfs(self, start: str) -> List[str]:
-        if start not in self.adj:
-            return []
-        stack = [start]
-        visited = set()
-        order = []
-        while stack:
-            u = stack.pop()
-            if u in visited:
-                continue
-            visited.add(u)
-            order.append(u)
-            for v, _ in reversed(self.adj[u]):
-                if v not in visited:
-                    stack.append(v)
-        return order
-
-    def dijkstra(self, src: str, dst: str) -> Tuple[float, List[str]]:
-        if src not in self.adj or dst not in self.adj:
-            return float("inf"), []
-        dist = {node: float("inf") for node in self.adj}
-        prev = {node: None for node in self.adj}
-        dist[src] = 0.0
-        pq = [(0.0, src)]
-        while pq:
-            d, u = heapq.heappop(pq)
-            if d > dist[u]:
-                continue
-            if u == dst:
-                break
-            for v, w in self.adj[u]:
-                nd = d + w
-                if nd < dist[v]:
-                    dist[v] = nd
-                    prev[v] = u
-                    heapq.heappush(pq, (nd, v))
-        if dist[dst] == float("inf"):
-            return float("inf"), []
-        path = []
-        cur = dst
-        while cur is not None:
-            path.append(cur)
-            cur = prev[cur]
-        path.reverse()
-        return dist[dst], path
-
-    def kruskal_mst(self) -> Tuple[float, List[Tuple[str, str, float]]]:
-        if not self.undirected:
-            raise ValueError("Kruskal requires an undirected graph.")
-        dsu = DisjointSet()
-        for u in self.adj:
-            dsu.make_set(u)
-        edges = sorted(self.edges(), key=lambda e: e[2])
-        mst = []
-        total = 0.0
-        for u, v, w in edges:
-            if dsu.find(u) != dsu.find(v):
-                dsu.union(u, v)
-                mst.append((u, v, w))
-                total += w
-        return total, mst
-
-# BST
-
-@dataclass
-class BSTNode:
-    key: str
-    left: Optional["BSTNode"] = None
-    right: Optional["BSTNode"] = None
-
-class BST:
-    def __init__(self):
-        self.root: Optional[BSTNode] = None
-
-    def insert(self, key: str):
-        self.root = self._insert(self.root, key)
-
-    def _insert(self, node: Optional[BSTNode], key: str) -> BSTNode:
-        if node is None:
-            return BSTNode(key)
-        if key < node.key:
-            node.left = self._insert(node.left, key)
-        elif key > node.key:
-            node.right = self._insert(node.right, key)
-        return node
-
-    def search(self, key: str) -> bool:
-        cur = self.root
-        while cur:
-            if key == cur.key:
-                return True
-            cur = cur.left if key < cur.key else cur.right
-        return False
-
-    def inorder(self) -> List[str]:
-        out: List[str] = []
-        def _in(node: Optional[BSTNode]):
-            if not node:
-                return
-            _in(node.left)
-            out.append(node.key)
-            _in(node.right)
-        _in(self.root)
-        return out
-
-
-# graph for NIBM navigation
-
-def sample_campus_graph() -> Tuple[Graph, BST]:
-    g = Graph(undirected=True)
-    edges = [
-        # Ground floor B1
-        ("Cafeteria", "LectureHall2", 5),
-        ("LectureHall2", "LectureHall1", 5),
-        ("LectureHall1", "AssistantsOffice", 3),
-        ("AssistantsOffice", "LectureHall3", 6),
-        ("LectureHall3", "PaymentOffice", 4),
-        ("PaymentOffice", "Stairs_B1_GF", 2),
-        ("Cafeteria", "Stairs_B2_GF", 2),
-
-        # Building 2
-        ("Stairs_B2_GF", "B2_GF", 1),
-        ("B2_GF", "B2_F1", 10),
-        ("B2_F1", "B2_F2", 10),
-        ("B2_F2", "Auditorium", 2),
-        ("B2_F2", "StudyArea", 5),
-
-        # First floor B1
-        ("Stairs_B1_GF", "LectureHall4", 10),
-        ("LectureHall4", "LectureHall5", 2),
-        ("LectureHall5", "LectureHall6", 2),
-
-        # Second floor B1
-        ("LectureHall4", "BusinessOffice", 10),
-        ("BusinessOffice", "LectureHallA", 2),
-        ("BusinessOffice", "LectureHallB", 2),
-        ("LectureHallA", "StudyArea", 3),
-        ("LectureHallB", "StudyArea", 3),
-        ("BusinessOffice", "LectureHall7_10", 6),
-        ("LectureHall7_10", "OutsideArea", 4),
-        ("OutsideArea", "B2_F2", 8),
-        ("StudyArea", "B2_F2", 5),
-
-        # Third floor B1
-        ("BusinessOffice", "Library", 15),
-        ("Library", "EngineeringSection", 5),
-
-        # Fourth floor B1
-        ("Library", "ComputingOffice", 15),
-        ("ComputingOffice", "ComputingLab", 3),
-        ("ComputingLab", "TeachersOffices", 3),
-        ("ComputingOffice", "HarrisonHall", 4),
-        ("HarrisonHall", "NetEngLab", 4),
-        ("NetEngLab", "Lab01", 3),
-    ]
-    for u, v, w in edges:
-        g.add_edge(u, v, float(w))
-
-    bst = BST()
-    for name in g.nodes():
-        bst.insert(name)
-    return g, bst
-
-
-def print_menu():
-    print("\n=== Campus Navigator ===")
-    print("1) List locations")
-    print("2) Shortest path (Dijkstra)")
-    print("3) BFS traversal (and optional path to destination)")
-    print("4) DFS traversal")
-    print("5) Minimum Spanning Tree (Kruskal)")
-    print("6) Search location (BST)")
-    print("7) Show all locations sorted (BST inorder)")
-    print("0) Exit")
-
-def list_locations(g: Graph):
-    print("Locations:", ", ".join(sorted(g.nodes())))
-
-def shortest_path(g: Graph):
-    src = input("Start location: ").strip()
-    dst = input("Destination location: ").strip()
-    dist, path = g.dijkstra(src, dst)
-    if path:
-        print(f"Shortest path {src} -> {dst}: {' -> '.join(path)} (distance={dist})")
-    else:
-        print("No path found or invalid nodes.")
-
-def bfs_traversal(g: Graph):
-    src = input("Start location: ").strip()
-    dst = input("Destination (press Enter to skip): ").strip()
-    order, parent = g.bfs(src)
-    if not order:
-        print("Invalid start node.")
-        return
-    print("BFS order:", " -> ".join(order))
-    if dst:
-        if dst in parent:
-            path = []
-            cur = dst
-            while cur is not None:
-                path.append(cur)
-                cur = parent[cur]
-            path.reverse()
-            print(f"BFS path {src} -> {dst}: {' -> '.join(path)} (unweighted hops)")
-        else:
-            print("Destination not reachable in BFS.")
-
-def dfs_traversal(g: Graph):
-    src = input("Start location: ").strip()
-    order = g.dfs(src)
-    if not order:
-        print("Invalid start node.")
-        return
-    print("DFS order:", " -> ".join(order))
-
-def show_mst(g: Graph):
-    total, mst = g.kruskal_mst()
-    print(f"MST total weight: {total}")
-    for u, v, w in mst:
-        print(f"{u} -- {v} (w={w})")
-
-def search_location(bst: BST):
-    key = input("Location name to search: ").strip()
-    print("Found." if bst.search(key) else "Not found.")
-
-def show_sorted_locations(bst: BST):
-    print("Sorted locations:", ", ".join(bst.inorder()))
-
-#demo
-
-def run_demo(g: Graph, bst: BST):
-    print("DEMO MODE: automatic runs for screenshots.\n")
-    print("1) Locations:", ", ".join(sorted(g.nodes())))
-
-    print("\n2) Dijkstra: shortest path Cafeteria -> Auditorium")
-    dist, path = g.dijkstra("Cafeteria", "Auditorium")
-    print(f"   {path}  distance = {dist}")
-
-    print("\n3) BFS from Cafeteria:")
-    order, _ = g.bfs("Cafeteria")
-    print("   Order:", order)
-
-    print("\n4) DFS from Cafeteria:")
-    print("   Order:", g.dfs("Cafeteria"))
-
-    print("\n5) Kruskal MST:")
-    total, mst = g.kruskal_mst()
-    print(f"   MST total weight: {total}")
-    for u, v, w in mst:
-        print(f"   {u} -- {v} (w={w})")
-
-    print("\n6) BST inorder (sorted locations):")
-    print("   ", bst.inorder())
-
-
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--demo", action="store_true", help="Run demo output (non-interactive)")
-    args = parser.parse_args()
-
-    g, bst = sample_campus_graph()
-
-    if args.demo:
-        run_demo(g, bst)
-        return
-
-    print("Tip: edit 'sample_campus_graph()' to change nodes & distances.")
-    while True:
-        print_menu()
-        choice = input("Choose: ").strip()
-        if choice == "0":
-            print("Goodbye.")
-            break
-        if choice == "1":
-            list_locations(g)
-        elif choice == "2":
-            shortest_path(g)
-        elif choice == "3":
-            bfs_traversal(g)
-        elif choice == "4":
-            dfs_traversal(g)
-        elif choice == "5":
-            show_mst(g)
-        elif choice == "6":
-            search_location(bst)
-        elif choice == "7":
-            show_sorted_locations(bst)
-        else:
-            print("Invalid choice.")
-
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    CampusNavigatorApp().run()
