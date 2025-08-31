@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Navigator</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cascadia+Code:ital,wght@0,200..700;1,200..700&family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=League+Spartan:wght@100..900&family=Pixelify+Sans:wght@400..700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Roboto&family=Roboto+Slab:wght@100..900&family=Sen:wght@400..800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Home Page -->
+        <div id="home-page" class="page active">
+           
+            <div class="header gradient-purple">
+                <div class="header-content">
+                    <div class="header-left">
+                        <h1>Campus Navigator</h1>
+                        <p>Find your way around campus</p>
+                    </div>
+                    <div class="header-icon">
+                        
+                        <div class="center-body">
+                        <div class="loader-shape-3"></div>
+                        </div>
+
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="stats-content">
+                        <div class="stats-text">
+                            <p class="stats-label">Total Locations</p>
+                            <p class="stats-number" id="total-locations">28</p>
+                        </div>
+                        <div class="stats-icon">
+                            <i data-lucide="map-pin"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Menu -->
+            <div class="content-padding">
+                <h2 class="section-title">Navigation Tools</h2>
+                
+                <div class="nav-grid">
+ 
+                    <button class="button2" onclick="showPage('shortest-path')">
+                         <i data-lucide="route"></i>
+                        <h3>Shortest Path</h3>
+                        <p>Find optimal route</p>
+                    </button>
+
+                    <button class="button2" onclick="showPage('locations')">
+                         <i data-lucide="list"></i>
+                        <h3>All Locations</h3>
+                        <p>Browse campus map</p>
+                    </button>
+
+                    <button class="button3" onclick="showPage('search')">
+                         <i data-lucide="search"></i>
+                        <h3 class="search-text">Search Location</h3>
+                        <p>Find specific place</p>
+                    </button>
+
+                    <button class="button4" onclick="showPage('algorithms')">
+                         <i data-lucide="git-branch"></i>
+                        <h3>Algorithms</h3>
+                        <p>BFS, DFS, MST</p>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Shortest Path Page -->
+        <div id="shortest-path-page" class="page">
+            <div class="header gradient-purple">
+                <div class="page-header">
+                    <button class="back-btn" onclick="showPage('home')">
+                        <i data-lucide="arrow-left"></i>
+                    </button>
+                    <h1>Shortest Path</h1>
+                    <div></div>
+                </div>
+            </div>
+
+            <div class="content-padding">
+                <div class="form-section">
+                    <div class="input-group">
+                        <label>From</label>
+                        <select id="start-location" class="form-select">
+                            <option value="">Select starting location</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label>To</label>
+                        <select id="end-location" class="form-select">
+                            <option value="">Select destination</option>
+                        </select>
+                    </div>
+
+                    <button id="find-path-btn" class="button5" onclick="findShortestPath()" disabled>
+                        Find Shortest Path
+                    </button>
+                </div>
+
+                <!-- Results -->
+                <div id="path-results" class="results-section" style="display: none;">
+                    <h3 class="results-title">Route Found</h3>
+                    
+                    <div class="results-content">
+                        <!-- Full Path Display -->
+                        <div class="result-card">
+                            <h4>Shortest Path</h4>
+                            <div class="path-display">
+                                <p id="full-path-text"></p>
+                            </div>
+                        </div>
+
+                        <!-- Visual Path Steps -->
+                        <div class="result-card">
+                            <h4>Route Steps</h4>
+                            <div id="path-steps" class="path-steps"></div>
+                        </div>
+
+                        <!-- Distance Summary -->
+                        <div class="result-card distance-card">
+                            <span>Total Distance</span>
+                            <span id="total-distance" class="distance-value"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Locations Page -->
+        <div id="locations-page" class="page">
+            <div class="header gradient-cyan">
+                <div class="page-header">
+                    <button class="back-btn" onclick="showPage('home')">
+                        <i data-lucide="arrow-left"></i>
+                    </button>
+                    <h1>All Locations</h1>
+                    <div></div>
+                </div>
+            </div>
+
+            <div class="content-padding">
+                <div class="location-count">
+                    <p>Total: <span id="location-count">28</span> locations</p>
+                </div>
+                
+                <div id="locations-list" class="locations-grid"></div>
+            </div>
+        </div>
+
+        <!-- Search Page -->
+        <div id="search-page" class="page">
+            <div class="header gradient-green">
+                <div class="page-header">
+                    <button class="back-btn" onclick="showPage('home')">
+                        <i data-lucide="arrow-left"></i>
+                    </button>
+                    <h1>Search Location</h1>
+                    <div></div>
+                </div>
+            </div>
+
+            <div class="content-padding">
+                <div class="form-section">
+                    <label>Location Name</label>
+                    <div class="search-input-group">
+                        <input type="text" id="search-input" placeholder="Enter location name..." class="form-input">
+                        <button id="search-btn" class="search-button gradient-green" onclick="searchLocation()">
+                            <i data-lucide="search"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Search Results -->
+                <div id="search-results" style="display: none;"></div>
+
+                <!-- Quick suggestions -->
+                <div class="quick-search">
+                    <h3>Quick Search</h3>
+                    <div class="quick-search-grid">
+                        <button class="quick-search-btn" onclick="quickSearch('Cafeteria')">Cafeteria</button>
+                        <button class="quick-search-btn" onclick="quickSearch('Library')">Library</button>
+                        <button class="quick-search-btn" onclick="quickSearch('Auditorium')">Auditorium</button>
+                        <button class="quick-search-btn" onclick="quickSearch('ComputingLab')">ComputingLab</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Algorithms Page -->
+        <div id="algorithms-page" class="page">
+            <div class="header gradient-purple">
+                <div class="page-header">
+                    <button class="back-btn" onclick="showPage('home')">
+                        <i data-lucide="arrow-left"></i>
+                    </button>
+                    <h1>Graph Algorithms</h1>
+                    <div></div>
+                </div>
+            </div>
+
+            <div class="content-padding">
+                <div class="form-section">
+                    <div class="input-group">
+                        <label>Choose Algorithm</label>
+                        <select id="algorithm-select" class="form-select" onchange="toggleAlgorithmInputs()">
+                            <option value="">Select algorithm</option>
+                            <option value="bfs">BFS Traversal</option>
+                            <option value="dfs">DFS Traversal</option>
+                            <option value="mst">Minimum Spanning Tree</option>
+                        </select>
+                    </div>
+
+                    <div id="algorithm-start-group" class="input-group" style="display: none;">
+                        <label>Starting Location</label>
+                        <select id="algorithm-start" class="form-select">
+                            <option value="">Select starting location</option>
+                        </select>
+                    </div>
+
+                    <div id="bfs-destination-group" class="input-group" style="display: none;">
+                        <label>Destination (optional for BFS path)</label>
+                        <select id="bfs-destination" class="form-select">
+                            <option value="">Skip for BFS order only</option>
+                        </select>
+                    </div>
+
+                    <button id="run-algorithm-btn" class="button5" onclick="runAlgorithm()" disabled>
+                        Run Algorithm
+                    </button>
+                </div>
+
+                <!-- Algorithm Results -->
+                <div id="algorithm-results" class="results-section" style="display: none;">
+                    <h3 id="algorithm-result-title" class="results-title"></h3>
+                    <div class="result-card">
+                        <pre id="algorithm-result-text"></pre>
+                    </div>
+                </div>
+
+                <!-- Algorithm Info -->
+                <div class="algorithm-info">
+                    <h3>Algorithm Info</h3>
+                    <div class="info-grid">
+                        <div class="info-card">
+                            <h4 class="info-title-bfs">BFS (Breadth-First Search)</h4>
+                            <p>Explores nodes level by level, finds shortest path in unweighted graphs</p>
+                        </div>
+                        <div class="info-card">
+                            <h4 class="info-title-dfs">DFS (Depth-First Search)</h4>
+                            <p>Explores as far as possible along each branch before backtracking</p>
+                        </div>
+                        <div class="info-card">
+                            <h4 class="info-title-mst">MST (Minimum Spanning Tree)</h4>
+                            <p>Finds minimum cost to connect all nodes using Kruskal's algorithm</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <button class="nav-btn" onclick="showPage('home')" data-page="home">
+                <i data-lucide="navigation"></i>
+                <span>Home</span>
+            </button>
+            <button class="nav-btn" onclick="showPage('shortest-path')" data-page="shortest-path">
+                <i data-lucide="route"></i>
+                <span>Path</span>
+            </button>
+            <button class="nav-btn" onclick="showPage('locations')" data-page="locations">
+                <i data-lucide="list"></i>
+                <span>Locations</span>
+            </button>
+            <button class="nav-btn" onclick="showPage('search')" data-page="search">
+                <i data-lucide="search"></i>
+                <span>Search</span>
+            </button>
+            <button class="nav-btn" onclick="showPage('algorithms')" data-page="algorithms">
+                <i data-lucide="git-branch"></i>
+                <span>Algorithms</span>
+            </button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

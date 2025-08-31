@@ -1,9 +1,4 @@
 #!/usr/bin/env python3
-"""
-Campus Navigator - Mobile UI (Simplified Version)
-Clean, stable mobile interface for campus navigation without custom graphics
-"""
-
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
@@ -17,7 +12,7 @@ from kivy.metrics import dp, sp
 from kivy.clock import Clock
 
 # Import backend functionality
-from campus_navigator_backend import CampusNavigator
+from backend.campus_navigator_backend import CampusNavigator
 
 class StyledButton(Button):
     """Simple styled button without custom graphics"""
