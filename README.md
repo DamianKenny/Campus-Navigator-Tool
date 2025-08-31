@@ -1,12 +1,10 @@
-# 🧭 Campus Navigator
+# Campus Navigator
 
 Campus Navigator is a graph-based navigation tool designed to help users find the most efficient routes between locations on a university campus. Developed as part of the Higher National Diploma in Software Engineering at NIBM, this project showcases the practical use of data structures and algorithms in solving real-world spatial problems.
 
 ---
 
-## 📸 Screenshots
-
-> _Add screenshots here to showcase the interface, graph visualizations, or sample outputs._
+## Screenshots
 
 - ![Home Screen](screenshots/home.png)
 - ![Shortest Path Output](screenshots/shortest_path.png)
@@ -14,17 +12,17 @@ Campus Navigator is a graph-based navigation tool designed to help users find th
 
 ---
 
-## 🚀 Features
+## Features
 
-- 🔍 **Shortest Path Finder** using Dijkstra’s Algorithm
-- 🌐 **Minimum Spanning Tree (MST)** via Kruskal’s Algorithm
-- 🔄 **Graph Traversal** with BFS and DFS
-- 📚 **Location Search** using Binary Search Tree (BST)
-- 🧱 Internal use of Queue (FIFO) and Stack (LIFO) for traversal operations
+- **Shortest Path Finder** using Dijkstra’s Algorithm
+- **Minimum Spanning Tree (MST)** via Kruskal’s Algorithm
+- **Graph Traversal** with BFS and DFS
+- **Location Search** using Binary Search Tree (BST)
+- Internal use of Queue (FIFO) and Stack (LIFO) for traversal operations
 
 ---
 
-## 🧠 Algorithms Explained
+## Algorithms Explained
 
 ### 1. Dijkstra’s Algorithm
 
@@ -58,19 +56,19 @@ Campus Navigator is a graph-based navigation tool designed to help users find th
 
 ---
 
-## 🛠️ Technologies Used
+## Technologies Used
 
-- **Language**: Python
-- **Libraries**: [List any libraries used, e.g., NetworkX, Matplotlib]
+- **Language**: Python, Html, Css, JavaScript
+- **Libraries**: Heapq, Deque, Dataclass, Dict, List, Optional, Tuple
 - **Concepts**: Graph Theory, Data Structures, Algorithms
 
 ---
 
-## 🧩 Customization
+## Customization
 
 This tool is designed to be adaptable for **any university campus**. To use it for your own institution:
 
-1. Open the backend graph definition file (e.g., `campus_graph.py`).
+1. Open the backend graph definition file (e.g., `campus_navigator_backend.py`).
 2. Replace the existing nodes and edges with your campus layout:
    ```python
    graph = {
